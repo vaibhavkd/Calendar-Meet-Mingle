@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Meetings</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Include Select2 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
+    <style>
+        .select2-selection__choice {
+            background-color: #007bff;
+            border: 1px solid #007bff;
+            color: white;
+            border-radius: 16px;
+            padding: 3px 10px;
+        }
+        .select2-selection__choice__remove {
+            color: white;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Manage Meetings</h1>
+        <form method="post" action="{{ url_for('manage_meetings') }}">
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" class="form-control"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="start_time">Start Time:</label>
+                <input type="datetime-local" id="start_time" name="start_time" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="end_time">End Time:</label>
+                <input type="datetime-local" id="end_time" name="end_time" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="room_id">Room:</label>
+                <select id="room_id" name="room_id" class="form-control" required>
+                    {% for room in rooms %}
+                        <option value="{{ room.id }}">{{ room.room_name }} (Capacity: {{ room.capacity }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="participants">Participants:</label>
+                <select id="participants" name="participants" class="form-control" multiple="multiple">
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.name }} ({{ user.email }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Meeting</button>
+        </form>
+
+        <h2>Existing Meetings</h2>
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Room</th>
+                    <th>Participants</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for meeting in meetings %}
+                    <tr>
+                        <td>{{ meeting.title }}</td>
+                        <td>{{ meeting.description }}</td>
+                        <td>{{ meeting.start_time | datetimeformat }}</td>
+                        <td>{{ meeting.end_time | datetimeformat }}</td>
+                        <td>{{ meeting.room.room_name }}</td>
+                        <td>
+                            <ul>
+                                {% for participant in meeting.participants %}
+                                    <li>{{ participant.user.name }} ({{ participant.user.email }})</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- Include Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Include Select2 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#participants').select2({
+                placeholder: 'Select participants',
+                tags: true,
+                tokenSeparators: [',', ' ']
+            });
+        });
+    </script>
+</body>
+</html>

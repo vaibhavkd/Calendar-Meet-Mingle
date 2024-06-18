@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Participants{% endblock %}
+
+{% block content %}
+<h2>Manage Participants</h2>
+<form method="POST" action="{{ url_for('add_participant') }}">
+    <div class="form-group">
+        <label for="meeting_id">Meeting</label>
+        <select class="form-control" id="meeting_id" name="meeting_id" required>
+            {% for meeting in meetings %}
+            <option value="{{ meeting.id }}">{{ meeting.title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="user_id">User</label>
+        <select class="form-control" id="user_id" name="user_id" required>
+            {% for user in users %}
+            <option value="{{ user.id }}">{{ user.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Participant</button>
+</form>
+<div class="mt-4">
+    <h3>Existing Participants</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Meeting</th>
+                <th>User</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for participant in participants %}
+            <tr>
+                <td>{{ participant.meeting.title }}</td>
+                <td>{{ participant.user.name }}</td>
+                <td>
+                    <a href="{{ url_for('delete_participant', participant_id=participant.id) }}" class="btn btn-danger btn-sm">Remove</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

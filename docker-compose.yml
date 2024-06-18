@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    container_name: calendar_system_postgres
+    environment:
+      POSTGRES_USER: calendar_user
+      POSTGRES_PASSWORD: calendar_pass
+      POSTGRES_DB: calendar_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - calendar-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U calendar_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 0s
+
+  db_init:
+    build:
+      context: ./db_init
+      dockerfile: Dockerfile
+    container_name: db_init
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: calendar_db
+      DB_USER: calendar_user
+      DB_PASSWORD: calendar_pass
+      SQL_SCRIPT_PATH: /scripts/add_records.sql
+    networks:
+      - calendar-net
+    entrypoint: ["python", "run_sql_script.py"]
+    healthcheck:
+      test: ["CMD-SHELL", "sleep 15 && exit 0"]
+      interval: 1m
+      timeout: 5s
+      retries: 1
+      start_period: 15s
+
+  flask-app:
+    build:
+      context: ./flask-app
+      dockerfile: Dockerfile
+    container_name: flask-app
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db_init
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: calendar_db
+      DB_USER: calendar_user
+      DB_PASSWORD: calendar_pass
+    networks:
+      - calendar-net
+    volumes:
+      - ./docs:/app/docs 
+
+volumes:
+  postgres_data:
+
+networks:
+  calendar-net:
+    driver: bridge
